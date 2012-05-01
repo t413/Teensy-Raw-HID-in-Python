@@ -237,32 +237,32 @@ int rawhid_send(int num, void *buf, int len, int timeout)
 //    Output:
 //	actual number of devices opened
 //
-int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
+int rawhid_open(int max, int vid, int pid, int usage_page, int usage, char *product)
 {
-        static IOHIDManagerRef hid_manager=NULL;
-        CFMutableDictionaryRef dict;
-        CFNumberRef num;
-        IOReturn ret;
+	static IOHIDManagerRef hid_manager=NULL;
+	CFMutableDictionaryRef dict;
+	CFNumberRef num;
+	IOReturn ret;
 	hid_t *p;
 	int count=0;
 
 	if (first_hid) free_all_hid();
 	printf("rawhid_open, max=%d\n", max);
 	if (max < 1) return 0;
-        // Start the HID Manager
-        // http://developer.apple.com/technotes/tn2007/tn2187.html
+	// Start the HID Manager
+	// http://developer.apple.com/technotes/tn2007/tn2187.html
 	if (!hid_manager) {
-        	hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-        	if (hid_manager == NULL || CFGetTypeID(hid_manager) != IOHIDManagerGetTypeID()) {
-                	if (hid_manager) CFRelease(hid_manager);
-                	return 0;
-        	}
+		hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+		if (hid_manager == NULL || CFGetTypeID(hid_manager) != IOHIDManagerGetTypeID()) {
+			if (hid_manager) CFRelease(hid_manager);
+			return 0;
+		}
 	}
 	if (vid > 0 || pid > 0 || usage_page > 0 || usage > 0) {
 		// Tell the HID Manager what type of devices we want
-        	dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                	&kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        	if (!dict) return 0;
+		dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+			&kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		if (!dict) return 0;
 		if (vid > 0) {
 			num = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vid);
 			CFDictionarySetValue(dict, CFSTR(kIOHIDVendorIDKey), num);
@@ -283,23 +283,23 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
 			CFDictionarySetValue(dict, CFSTR(kIOHIDPrimaryUsageKey), num);
 			CFRelease(num);
 		}
-        	IOHIDManagerSetDeviceMatching(hid_manager, dict);
-        	CFRelease(dict);
+		IOHIDManagerSetDeviceMatching(hid_manager, dict);
+		CFRelease(dict);
 	} else {
-        	IOHIDManagerSetDeviceMatching(hid_manager, NULL);
+		IOHIDManagerSetDeviceMatching(hid_manager, NULL);
 	}
 	// set up a callbacks for device attach & detach
-        IOHIDManagerScheduleWithRunLoop(hid_manager, CFRunLoopGetCurrent(),
+	IOHIDManagerScheduleWithRunLoop(hid_manager, CFRunLoopGetCurrent(),
 		kCFRunLoopDefaultMode);
-        IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, attach_callback, NULL);
+	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, attach_callback, NULL);
 	IOHIDManagerRegisterDeviceRemovalCallback(hid_manager, detach_callback, NULL);
-        ret = IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
-        if (ret != kIOReturnSuccess) {
-                IOHIDManagerUnscheduleFromRunLoop(hid_manager,
-                        CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-                CFRelease(hid_manager);
-                return 0;
-        }
+	ret = IOHIDManagerOpen(hid_manager, kIOHIDOptionsTypeNone);
+	if (ret != kIOReturnSuccess) {
+		IOHIDManagerUnscheduleFromRunLoop(hid_manager,
+			CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+		CFRelease(hid_manager);
+		return 0;
+	}
 	printf("run loop\n");
 	// let it do the callback for all devices
 	while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true) == kCFRunLoopRunHandledSource) ;

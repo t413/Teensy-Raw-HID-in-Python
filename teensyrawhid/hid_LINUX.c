@@ -149,25 +149,25 @@ int rawhid_open(int max, int vid, int pid, int usage_page, int usage, char *prod
 			if (vid > 0 && dev->descriptor.idVendor != vid) continue;
 			if (pid > 0 && dev->descriptor.idProduct != pid) continue;
 
-                        if (product) {
-                            usb_dev_handle *u = usb_open(dev);
-                            if (!u) continue;
-
-                            if (!dev->descriptor.iProduct) {
-                                usb_close(u);
-                                continue;
-                            }
-
-                            char string[32];
-                            int ret = usb_get_string_simple(u, dev->descriptor.iProduct, string, sizeof(string));
-                            usb_close(u);
-
-                            if (ret <= 0) continue;
-
-                            printf("iProduct = %s\n", string);
-
-                            if (strncmp(product, string, ret)) continue;
-                        }
+			if (product) {
+				usb_dev_handle *u = usb_open(dev);
+				if (!u) continue;
+			
+				if (!dev->descriptor.iProduct) {
+					usb_close(u);
+					continue;
+				}
+				
+				char string[32];
+				int ret = usb_get_string_simple(u, dev->descriptor.iProduct, string, sizeof(string));
+				usb_close(u);
+				
+				if (ret <= 0) continue;
+				
+				printf("iProduct = %s\n", string);
+				
+				if (strncmp(product, string, ret)) continue;
+			}
 
 			if (!dev->config) continue;
 			if (dev->config->bNumInterfaces < 1) continue;

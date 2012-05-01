@@ -168,7 +168,7 @@ return_error:
 //    Output:
 //	actual number of devices opened
 //
-int rawhid_open(int max, int vid, int pid, int usage_page, int usage)
+int rawhid_open(int max, int vid, int pid, int usage_page, int usage, char *product)
 {
         GUID guid;
         HDEVINFO info;
