@@ -1,16 +1,28 @@
 #!/usr/bin/env python
 
 from distutils.core import setup, Extension
+import platform, sys
 
-rawhidmodule = Extension('TeensyRawhid',
-    # TODO: support all three platforms here
-    sources = ['teensyrawhid/rawhidmodule.c', 'teensyrawhid/hid_LINUX.c'],
-    extra_link_args = ['-lusb'])
 
-    #sources = ['rawhidmodule.c', 'hid_MACOSX.c'],
-    #extra_link_args = ['-framework', 'IOKit', '-framework', 'CoreFoundation'])
+if platform.system() == 'Linux':
+    rawhidmodule = Extension('TeensyRawhid',
+        sources = ['teensyrawhid/rawhidmodule.c', 'teensyrawhid/hid_LINUX.c'],
+        extra_link_args = ['-lusb']
+    )
 
-    #TODO windows
+elif platform.system() == 'Darwin':
+    rawhidmodule = Extension('TeensyRawhid',
+        sources = ['teensyrawhid/rawhidmodule.c', 'teensyrawhid/hid_MACOSX.c'],
+        extra_link_args = ['-framework', 'IOKit', '-framework', 'CoreFoundation']
+    )
+    
+elif platform.system() == 'Windows':
+    rawhidmodule = Extension('TeensyRawhid',
+        sources = ['teensyrawhid/rawhidmodule.c', 'teensyrawhid/hid_WINDOWS.c'],
+        extra_link_args = ['-lhid', '-lsetupapi']
+    )
+    #TODO Test on windows
+else: raise Exception('Unknown OS')
 
 setup(
     name='TeensyRawhid',
