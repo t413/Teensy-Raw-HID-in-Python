@@ -174,7 +174,7 @@ static PyObject * Rawhid_recv(Rawhid* self, PyObject *args, PyObject *kwds)
     else
     {
         free(buf);
-        return PyErr_Format(PyExc_IOError, "Received less data than requested (got %d bytes, expected %d bytes)", ret, size);
+        return PyErr_Format(PyExc_Warning, "Received less data than requested (got %d bytes, expected %d bytes)", ret, size);
     }
 
     // I assume that buf is copied, per http://docs.python.org/release/2.0/ext/buildValue.html
